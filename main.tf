@@ -77,6 +77,14 @@ resource "aws_security_group" "my_security_group" {
     cidr_blocks = ["0.0.0.0/0"] 
   }
 
+  egress {
+    description = "Allow SSH to 0.0.0.0/0"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] 
+  }
+
   tags = {
     Name = "my-security-group"
   }
@@ -85,20 +93,37 @@ resource "aws_security_group" "my_security_group" {
 resource "aws_security_group" "my_security_group_port_and_vpc_cidr_only" {
   vpc_id      = aws_vpc.my_vpc.id
   name        = "my_security_group_port_and_vpc_cidr_only"
-  description = "Security group allowing specific ports within VPC CIDR range"
+  description = "Security group allowing SSH and port 3000 within VPC CIDR range"
 
   ingress {
     description = "Allow SSH from VPC CIDR"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.my_vpc.cidr_block]
+  }
+
+  ingress {
+    description = "Allow port 3000 from VPC CIDR"
     from_port   = 3000
     to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = [aws_vpc.my_vpc.cidr_block]
   }
 
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   tags = {
     Name = "my-security-group"
   }
 }
+
 
 resource "aws_instance" "ec2-bastion-host" {
   ami           = "ami-" 
